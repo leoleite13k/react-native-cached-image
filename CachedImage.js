@@ -75,13 +75,16 @@ class CachedImage extends React.Component {
         this.handleConnectivityChange = this.handleConnectivityChange.bind(this);
         this.processSource = this.processSource.bind(this);
         this.renderLoader = this.renderLoader.bind(this);
+        this.subNetInfo = null;
     }
 
     componentWillMount() {
         this._isMounted = true;
-        NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
+        this.subNetInfo = NetInfo.addEventListener(state => {
+          this.handleConnectivityChange(state.isConnected)
+        });
         // initial
-        NetInfo.isConnected.fetch()
+        NetInfo.fetch()
             .then(isConnected => {
                 this.safeSetState({
                     networkAvailable: isConnected
@@ -93,7 +96,7 @@ class CachedImage extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
-        NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectivityChange);
+        this.subNetInfo();
     }
 
     componentWillReceiveProps(nextProps) {
